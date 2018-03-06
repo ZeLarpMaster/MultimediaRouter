@@ -14,11 +14,19 @@ class App:
         self.load_config()
         self.router = Router(self.configs["routes"], verbose=verbose)
 
-    def run(self):
+    def run(self, callback: typing.Callable[[int, int], None]=None):
+        callback(None, None, False)
+        all_paths = []
         for bucket in self.configs["buckets"]:
-            self.log("Exécution du routeur dans le seau: {}".format(bucket))
-            for path in glob.iglob(os.path.join(bucket, "**", "*"), recursive=True):
-                self.router.handle(path)
+            self.log("Ajout en cache des fichiers du seau: {}".format(bucket))
+            all_paths.extend(glob.iglob(os.path.join(bucket, "**", "*"), recursive=True))
+        length = len(all_paths)
+        callback(0, length, False)
+        for i, path in enumerate(all_paths):
+            self.router.handle(path)
+            if callback is not None:
+                callback(i+1, length, False)
+        callback(length, length, True)
 
     def set_buckets(self, buckets: typing.List[os.PathLike]):
         self.configs["buckets"].clear()
