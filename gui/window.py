@@ -1,6 +1,8 @@
 import threading
+import ctypes
 
 from tkinter.ttk import Progressbar
+from tkinter import messagebox
 from tkinter import *
 
 from core import App
@@ -15,7 +17,9 @@ class Window(Frame):
         self.app = app
         self.master.title("Multimedia File Router")
         self.master.minsize(500, 200)
+        self.master.option_add("*tearOff", False)
         self.progress_current = Variable(name="progress_current", value=0.0)
+        self.copy_enabled = StringVar(value=self.app.get_copy())
         self.init_widgets()
 
     def init_widgets(self):
@@ -27,6 +31,14 @@ class Window(Frame):
         self.menu_bar = Menu(self.master)
         self.master["menu"] = self.menu_bar
         self.init_tools_menu()
+        self.init_config_menu()
+
+    def init_config_menu(self):
+        self.menu_config = Menu(self.menu_bar)
+        self.menu_bar.add_cascade(menu=self.menu_config, label="Options")
+
+        self.menu_config.add_checkbutton(label="Créer des copies", variable=self.copy_enabled, onvalue=1, offvalue=0,
+                                         command=self.update_copy)
 
     def init_tools_menu(self):
         self.menu_tools = Menu(self.menu_bar)
@@ -34,9 +46,16 @@ class Window(Frame):
 
         self.menu_tools.add_command(label="Exécuter", command=self.execute)
 
+    def update_copy(self):
+        self.app.set_copy(self.copy_enabled.get() == "1")
+
     def execute(self):
-        self.thread = threading.Thread(target=self.app.run, args=(self.on_progress,), daemon=True)
-        self.thread.start()
+        if ctypes.windll.shell32.IsUserAnAdmin() == 0 and self.copy_enabled.get() == "0":
+            messagebox.showerror("Impossible d'exécuter", "Vous devez exécuter le programme en tant qu'administrateur "
+                                                          "pour créer des liens vers les fichiers.")
+        else:
+            self.thread = threading.Thread(target=self.app.run, args=(self.on_progress,), daemon=True)
+            self.thread.start()
 
     def cleanup_thread(self):
         self.thread = None

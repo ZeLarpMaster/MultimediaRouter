@@ -12,7 +12,9 @@ class App:
         self.verbose = verbose
         self.config_path = config_path
         self.load_config()
-        self.router = Router(self.configs["routes"], verbose=verbose)
+        self.router = Router(self.configs["routes"],
+                             verbose=verbose,
+                             copy=self.configs.get("should_copy", False))
 
     def run(self, callback: typing.Callable[[int, int], None]=None):
         callback(None, None, False)
@@ -27,6 +29,13 @@ class App:
             if callback is not None:
                 callback(i+1, length, False)
         callback(length, length, True)
+
+    def get_copy(self) -> bool:
+        return self.configs.get("should_copy", False)
+
+    def set_copy(self, value: bool):
+        self.configs["should_copy"] = value
+        self.router.update_copy(value)
 
     def set_buckets(self, buckets: typing.List[os.PathLike]):
         self.configs["buckets"].clear()
