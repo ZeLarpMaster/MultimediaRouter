@@ -9,9 +9,17 @@ def main():
         if command == "quit":
             pass
         elif command == "help":
-            print("Commands:\nquit - Quits this application\nhelp - Shows this message\nrun - Execute the router\n"
-                  "route add <extension> <destination> - Add a route\nroute del <extension> - Delete a route\n"
-                  "bucket add <filepath> - Add a bucket\nbucket del <filepath> - Delete a bucket\n")
+            print("""Commands:
+quit - Quits this application
+help - Shows this message
+run - Execute the router
+route add <extension> <destination> - Add a route
+route del <extension> - Delete a route
+bucket add <filepath> - Add a bucket
+bucket del <filepath> - Delete a bucket
+copy - Sets the router in copy mode (file are copied from buckets to routes)
+link - Sets the router in link mode (symbolic links between buckets and routes)
+""")
         elif command == "run":
             app.run()
         elif command == "route":
@@ -30,6 +38,10 @@ def main():
                 app.add_bucket(args[1])
             elif sub_cmd == "del":
                 app.remove_bucket(args[1])
+        elif command == "copy":
+            app.set_copy(True)
+        elif command == "link":
+            app.set_copy(False)
         raw_command = input("Enter your command: ").split(" ", 1)
         command = raw_command[0]
         rest = raw_command[-1]
